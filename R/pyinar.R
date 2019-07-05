@@ -35,17 +35,13 @@ pyinar <- function(time_series,
         opt_G0 <- .KL_base_measure(prior[["lambda_max"]])
         prior[["a0_G0"]] <- opt_G0[1]
         prior[["b0_G0"]] <- opt_G0[2]
-    }
-		
+    }	
     if (is.null(prior[["sigma"]])) prior[["sigma"]] <- 0
-		
-	if (is.null(prior[["k0"]])) prior[["k0"]] <- 1.01
-		
+	if (is.null(prior[["k0"]])) prior[["k0"]] <- 1.01	
 	if (is.null(prior[["tau"]])) prior[["tau"]] <- uniroot(.pitman_expected_clusters, 
 														   c(-prior[["sigma"]] + 1e-6, 100), prior[["sigma"]], 
 				   							               expected_number_of_clusters = prior[["k0"]], 
                    									       t = length(time_series) - p)$root
-   
 	if (is.null(prior[["a_alpha"]])) prior[["a_alpha"]] <- rep(1, p)
 		                 
     post <- .posterior(time_series,

@@ -41,7 +41,7 @@ pyinar <- function(time_series,
 	if (is.null(prior[["tau"]])) prior[["tau"]] <- uniroot(.pitman_expected_clusters, 
 														c(-prior[["sigma"]] + 1e-6, 100), prior[["sigma"]], 
 														expected_number_of_clusters = prior[["k0"]], 
-														t = length(time_series) - p, p = p)$root
+														t = length(time_series) - 1)$root
 	if (is.null(prior[["a_alpha"]])) prior[["a_alpha"]] <- rep(1, p)
 		                 
     post <- .posterior(time_series,
@@ -127,11 +127,11 @@ summary.pyinar <- function(model) {
     optim(c(1, 1), function(x) D_KL(x[1], x[2], lambda_max), method = "L-BFGS-B", lower = c(1e-6, 1e-6))$par
 }
 		  
-.pitman_expected_clusters <- function (tau, sigma, t, p, expected_number_of_clusters) {
+.pitman_expected_clusters <- function (tau, sigma, t, expected_number_of_clusters) {
                                  if (sigma == 0) 
 							         tau * (digamma(tau + t) - digamma(tau)) - expected_number_of_clusters 	 
 							     else
 							         exp((lnpoch(tau + sigma, t) - log(sigma)
-                                     - lnpoch(tau + 1, t - p))) - 
+                                     - lnpoch(tau + 1, t - 1))) - 
                                      expected_number_of_clusters - (tau / sigma) 
 }

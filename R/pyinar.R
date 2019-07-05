@@ -7,7 +7,6 @@
 #' @return A model
 #' 
 #' @export
-#' @importFrom gsl lnpoch
 pyinar <- function(time_series,
 				   p = 1,
                    prior = list(a0_alpha = NULL, b0_alpha = NULL,
@@ -37,13 +36,17 @@ pyinar <- function(time_series,
         prior[["a0_G0"]] <- opt_G0[1]
         prior[["b0_G0"]] <- opt_G0[2]
     }
+		
     if (is.null(prior[["sigma"]])) prior[["sigma"]] <- 0
-    if (is.null(prior[["k0"]])) prior[["k0"]] <- 1.01
-    if (is.null(prior[["tau"]])) prior[["tau"]] <- uniroot(.pitman_expected_clusters, 
-	                                                      c(-prior[["sigma"]] + 1e-6, 100), prior[["sigma"]], 
-				   							              expected_number_of_clusters = prior[["k0"]], 
-                   									      t = length(time_series) - p)$root
-    if (is.null(prior[["a_alpha"]])) prior[["a_alpha"]] <- rep(1, p)
+		
+	if (is.null(prior[["k0"]])) prior[["k0"]] <- 1.01
+		
+	if (is.null(prior[["tau"]])) prior[["tau"]] <- uniroot(.pitman_expected_clusters, 
+														   c(-prior[["sigma"]] + 1e-6, 100), prior[["sigma"]], 
+				   							               expected_number_of_clusters = prior[["k0"]], 
+                   									       t = length(time_series) - p)$root
+   
+	if (is.null(prior[["a_alpha"]])) prior[["a_alpha"]] <- rep(1, p)
 		                 
     post <- .posterior(time_series,
 						  p,
@@ -127,12 +130,12 @@ summary.pyinar <- function(model) {
     D_KL <- function(a0, b0, lambda_max) lgamma(a0) - a0*log(b0) - (a0 - 1)*(log(lambda_max) - 1) + b0*(lambda_max / 2) - log(lambda_max)
     optim(c(1, 1), function(x) D_KL(x[1], x[2], lambda_max), method = "L-BFGS-B", lower = c(1e-6, 1e-6))$par
 }
-
+		  
 .pitman_expected_clusters <- function (tau, sigma, t, expected_number_of_clusters) {
-                             if (sigma == 0) 
-							     tau * (digamma(tau + t) - digamma(tau)) - expected_number_of_clusters 	 
-							 else
-							     exp((lnpoch(tau + sigma, t) - log(sigma)
-                                 - lnpoch(tau + 1, t - 1))) - 
-                                 expected_number_of_clusters - (tau / sigma) 
+                                 if (sigma == 0) 
+							         tau * (digamma(tau + t) - digamma(tau)) - expected_number_of_clusters 	 
+							     else
+							         exp((lnpoch(tau + sigma, t) - log(sigma)
+                                     - lnpoch(tau + 1, t - 1))) - 
+                                     expected_number_of_clusters - (tau / sigma) 
 }

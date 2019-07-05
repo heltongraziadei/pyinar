@@ -41,9 +41,9 @@ pyinar <- function(time_series,
 	if (is.null(prior[["k0"]])) prior[["k0"]] <- 1.01
 		
 	if (is.null(prior[["tau"]])) prior[["tau"]] <- uniroot(.pitman_expected_clusters, 
-														   c(-prior[["sigma"]] + 1e-6, 100), prior[["sigma"]], 
-				   							               expected_number_of_clusters = prior[["k0"]], 
-                   									       t = length(time_series) - p)$root
+	                                                      c(-prior[["sigma"]] + 1e-6, 100), prior[["sigma"]], 
+				   							              expected_number_of_clusters = prior[["k0"]], 
+                   									      t = length(time_series) - p)$root
    
 	if (is.null(prior[["a_alpha"]])) prior[["a_alpha"]] <- rep(1, p)
 		                 
@@ -131,10 +131,10 @@ summary.pyinar <- function(model) {
 }
 
 .pitman_expected_clusters <- function (tau, sigma, t, expected_number_of_clusters) {
-                                 if (sigma == 0) 
-							         tau * (digamma(tau + t) - digamma(tau)) - expected_number_of_clusters 	 
-							     else
-							         exp((lnpoch(tau + sigma, t) - log(sigma)
-                                     - lnpoch(tau + 1, t - 1))) - 
-                                     expected_number_of_clusters - (tau / sigma) 
+                             if (sigma == 0) 
+							     tau * (digamma(tau + t) - digamma(tau)) - expected_number_of_clusters 	 
+							 else
+							     exp((lnpoch(tau + sigma, t) - log(sigma)
+                                 - lnpoch(tau + 1, t - 1))) - 
+                                 expected_number_of_clusters - (tau / sigma) 
 }

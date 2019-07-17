@@ -34,8 +34,6 @@ IntegerVector minus_m_ij(IntegerMatrix x, int i, int j) {
      return minus_matrix;
 }
 
-
-// [[Rcpp::export]]
 IntegerVector table_each_count(NumericVector x) {
     int t = x.size(); 
     IntegerVector n(t); 
@@ -44,7 +42,6 @@ IntegerVector table_each_count(NumericVector x) {
     for (int j = 0; j < t; j++) n[j] = cnt[x[j]];
     return n;
 }
-
 
 int m_full_conditional(double alpha, double lambda, int yt_i, int yt, IntegerVector m_minus_t) {
     int M = m_minus_t.size(), sum_m_minus_t;

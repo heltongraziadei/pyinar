@@ -2,6 +2,8 @@
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
+#include <unordered_map>
+
 
 using namespace std;
 using namespace Rcpp;
@@ -32,18 +34,17 @@ IntegerVector minus_m_ij(IntegerMatrix x, int i, int j) {
      return minus_matrix;
 }
 
+
+// [[Rcpp::export]]
 IntegerVector table_each_count(NumericVector x) {
     int t = x.size(); 
     IntegerVector n(t); 
-  
-    for (int i = 0; i < t; i++) { 
-        double z = x[i]; 
-        NumericVector y = x[x == z]; 
-        n[i] = y.size();
-    }
-	
+    std::unordered_map<int, int> cnt;
+    for (int j = 0; j < t; j++) cnt[x[j]]++;
+    for (int j = 0; j < t; j++) n[j] = cnt[x[j]];
     return n;
 }
+
 
 int m_full_conditional(double alpha, double lambda, int yt_i, int yt, IntegerVector m_minus_t) {
     int M = m_minus_t.size(), sum_m_minus_t;

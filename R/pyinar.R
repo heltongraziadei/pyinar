@@ -122,6 +122,51 @@ summary.pyinar <- function(model) {
     printf("Total simulation time: %.2f seconds\n\n", round(model$elapsed[3]))
 }
 
+cross_validate <- function(time_series,
+                           p = 1,
+                           h = 1,
+                           training_epoch = NULL,
+                           prior = list(a_alpha = NULL,
+                                        a0_tau = NULL, b0_tau = NULL,
+                                        a0_G0 = NULL, b0_G0 = NULL,
+                                        lambda_max = NULL),
+                           burn_in = 10^3,
+                           chain_length = 10^4,
+                           random_seed = 1761,
+                           verbose = TRUE)
+{
+    if(is.null(training_epoch)) training_epoch <- round(0.7 * length(time_series))
+    
+    # y_hat <- numeric(length(time_series) - (training_epoch + h) + 1)
+    y_hat <- matrix(NA, nrow = length(h), ncol = length(time_series) - (training_epoch + min(h)) + 1)
+    diff_y_hat_obs <- matrix(NA, nrow = length(h), ncol = length(time_series) - (training_epoch + min(h)) + 1)
+    
+    for (j in 1:ncol(y_hat)) {
+        if (verbose) cat(sprintf("Training up to epoch %d ...\n", training_epoch + j - 1))
+        model <- pyinar(time_series[1:(training_epoch + j - 1)],
+                        p = p,
+                        prior = prior,
+                        burn_in = burn_in,
+                        chain_length = chain_length,
+                        random_seed = random_seed,
+                        verbose = verbose)
+        
+        for (i in 1:nrow(y_hat)) {
+            if (training_epoch + j + i - 1  <= length(time_series)) {
+                if (verbose) cat(sprintf("Predicting epoch %d (h = %d)...\n", training_epoch + j + i - 1, h[i]))
+                y_hat[i, j + i - 1] <- predict(model, h = h[i])$est
+                diff_y_hat_obs[i, j + i - 1] = abs(time_series[training_epoch + j + i - 1] - y_hat[i, j + i - 1])
+            }
+        }
+    }
+    
+    mae <- numeric(length(h))
+    mae <- rowMeans(diff_y_hat_obs, na.rm = TRUE)
+    names(mae) <- paste0("MAE (h = ", h, ")")
+    
+    list(est = y_hat, mae = mae)
+}
+
 .KL_base_measure <- function(lambda_max) {
     D_KL <- function(a0, b0, lambda_max) lgamma(a0) - a0*log(b0) - (a0 - 1)*(log(lambda_max) - 1) + b0*(lambda_max / 2) - log(lambda_max)
     optim(c(1, 1), function(x) D_KL(x[1], x[2], lambda_max), method = "L-BFGS-B", lower = c(1e-6, 1e-6))$par
